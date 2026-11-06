@@ -1,1 +1,184 @@
 # smrat-sopping
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smrat Sopping</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f7f8fa;color:#222}
+header{background:#fff;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px #ddd;position:sticky;top:0;z-index:5}
+.logo{font-size:23px;font-weight:bold;color:#176b50}
+.cart{background:#176b50;color:white;border:0;padding:10px 15px;border-radius:8px}
+.hero{background:#176b50;color:white;text-align:center;padding:45px 15px}
+.hero h1{font-size:30px;margin:0 0 12px}
+.hero p{margin:0}
+.search{display:block;width:90%;max-width:500px;margin:22px auto;padding:13px;border:1px solid #ddd;border-radius:9px;font-size:16px}
+h2{text-align:center;margin:28px 0}
+.products{padding:0 5%;display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:1000px;margin:auto}
+.product{background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px #ddd;padding-bottom:13px}
+.product img{width:100%;height:145px;object-fit:cover;background:#eee}
+.product h3{font-size:16px;margin:12px 10px 6px}
+.price{color:#176b50;font-weight:bold;margin:0 10px 12px}
+.product button,.action{background:#176b50;color:white;border:0;padding:11px;border-radius:7px;cursor:pointer}
+.product button{margin:0 10px;width:calc(100% - 20px)}
+section{padding:20px 5%;max-width:650px;margin:auto}
+.panel{background:white;padding:18px;border-radius:12px;box-shadow:0 2px 8px #ddd;margin-bottom:20px}
+input,select{width:100%;padding:12px;margin:8px 0 14px;border:1px solid #ddd;border-radius:7px;font-size:15px}
+label{font-size:14px;font-weight:bold}
+.action{width:100%;font-size:16px}
+.cart-item{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid #eee}
+footer{text-align:center;background:#173d32;color:white;padding:25px;margin-top:30px}
+.small{font-size:13px;color:#777;line-height:1.6}
+@media(min-width:650px){.products{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="logo">🛍️ Smrat Sopping</div>
+ <button class="cart" onclick="document.getElementById('cart').scrollIntoView()">Cart 🛒 <span id="count">0</span></button>
+</header>
+
+<div class="hero">
+ <h1>Welcome to Smrat Sopping</h1>
+ <p>Shop Easy, Shop Smart!</p>
+</div>
+
+<input class="search" id="search" placeholder="🔍 Search products..." oninput="renderProducts()">
+
+<h2>Our Products</h2>
+<div class="products" id="products"></div>
+
+<section id="cart">
+ <div class="panel">
+  <h2>🛒 Shopping Cart</h2>
+  <div id="cartItems">Your cart is empty.</div>
+  <h3 id="total">Total: ৳0</h3>
+ </div>
+
+ <div class="panel">
+  <h2>📦 Checkout</h2>
+  <form id="orderForm">
+   <label>Customer Name</label>
+   <input id="customer" placeholder="Your full name" required>
+
+   <label>Mobile Number</label>
+   <input id="phone" type="tel" placeholder="01XXXXXXXXX" pattern="01[0-9]{9}" required>
+
+   <label>Delivery Address</label>
+   <input id="address" placeholder="Your full address" required>
+
+   <label>Payment Method</label>
+   <select id="payment">
+    <option>Cash on Delivery</option>
+    <option>bKash (Manual Payment)</option>
+    <option>Nagad (Manual Payment)</option>
+   </select>
+
+   <p class="small" id="paymentInfo">
+    Cash on Delivery: পণ্য হাতে পেয়ে টাকা দিন।
+   </p>
+
+   <button class="action" type="submit">Confirm Order</button>
+  </form>
+  <p class="small">Note: এটি একটি demo website। অর্ডার এখন শুধু এই পেজে দেখাবে, দোকানদারের কাছে পাঠাবে না।</p>
+ </div>
+</section>
+
+<footer>
+ <h3>Smrat Sopping</h3>
+ <p>Thank you for shopping with us ❤️</p>
+ <p>© 2026 Smrat Sopping</p>
+</footer>
+
+<script>
+const products=[
+ {id:1,name:"Smart Watch",price:1200,img:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"},
+ {id:2,name:"Headphones",price:850,img:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"},
+ {id:3,name:"Sneakers",price:1500,img:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500"},
+ {id:4,name:"Backpack",price:950,img:"https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500"},
+ {id:5,name:"Sunglasses",price:650,img:"https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500"},
+ {id:6,name:"Camera",price:2200,img:"https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500"}
+];
+
+let cart=[];
+
+function renderProducts(){
+ const q=document.getElementById("search").value.toLowerCase();
+ document.getElementById("products").innerHTML=products
+ .filter(p=>p.name.toLowerCase().includes(q))
+ .map(p=>`
+ <div class="product">
+  <img src="${p.img}" alt="${p.name}">
+  <h3>${p.name}</h3>
+  <p class="price">৳${p.price}</p>
+  <button onclick="addCart(${p.id})">Add to Cart</button>
+ </div>`).join("");
+}
+
+function addCart(id){
+ const item=cart.find(x=>x.id===id);
+ if(item)item.qty++;
+ else cart.push({...products.find(x=>x.id===id),qty:1});
+ updateCart();
+}
+
+function updateCart(){
+ document.getElementById("count").textContent=
+ cart.reduce((s,x)=>s+x.qty,0);
+
+ document.getElementById("cartItems").innerHTML=cart.length?
+ cart.map(x=>`
+ <div class="cart-item">
+ <span>${x.name} × ${x.qty}</span>
+ <span>৳${x.price*x.qty}
+ <button onclick="removeItem(${x.id})">❌</button></span>
+ </div>`).join(""):"Your cart is empty.";
+
+ document.getElementById("total").textContent=
+ "Total: ৳"+cart.reduce((s,x)=>s+x.price*x.qty,0);
+}
+
+function removeItem(id){
+ cart=cart.filter(x=>x.id!==id);
+ updateCart();
+}
+
+document.getElementById("payment").addEventListener("change",function(){
+ const v=this.value;
+ document.getElementById("paymentInfo").textContent=
+ v==="Cash on Delivery"?
+ "পণ্য হাতে পেয়ে টাকা দিন।":
+ "এটি ম্যানুয়াল পেমেন্টের ডেমো। আসল পেমেন্টের জন্য দোকানের যাচাইকৃত মার্চেন্ট নম্বর ও পেমেন্ট সিস্টেম যুক্ত করতে হবে।";
+});
+
+document.getElementById("orderForm").addEventListener("submit",function(e){
+ e.preventDefault();
+ if(cart.length===0){
+  alert("Please add products to your cart first!");
+  return;
+ }
+ const order={
+  name:document.getElementById("customer").value,
+  phone:document.getElementById("phone").value,
+  address:document.getElementById("address").value,
+  payment:document.getElementById("payment").value,
+  items:cart.map(x=>x.name+" x "+x.qty).join(", "),
+  total:cart.reduce((s,x)=>s+x.price*x.qty,0)
+ };
+ alert("Demo order created!\nName: "+order.name+
+ "\nItems: "+order.items+
+ "\nTotal: ৳"+order.total+
+ "\nPayment: "+order.payment+
+ "\n\nএটি শুধু পরীক্ষামূলক অর্ডার। দোকানে পাঠানো হয়নি।");
+ cart=[];
+ updateCart();
+ this.reset();
+});
+
+renderProducts();
+</script>
+</body>
+</html>
